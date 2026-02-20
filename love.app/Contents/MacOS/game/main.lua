@@ -1,14 +1,5 @@
 Object = require 'libraries/classic/classic'
 
-function CreateTable()
-    return {
-        a = 1,
-        b = 2,
-        c = 3,
-        sum = function(self) self.c = self.c + self.a + self.b end,
-    }
-end
-
 function love.load()
     local object_files = {}
     recursiveEnumerate('objects', object_files)
@@ -19,7 +10,9 @@ end
 function requireFiles(files)
     for _, file in ipairs(files) do
         local file = file:sub(1, -5)
-        require(file)
+        local last_forward_slash_index = file:find("/[^/]*$")
+        local class_name = file:sub(last_forward_slash_index+1, #file)
+        _G[class_name] = require(file)
     end
 end
 
@@ -41,4 +34,20 @@ end
 
 function love.draw()
     hypecircle:draw()
+end
+
+function love.keypressed(key)
+    print(key)
+end
+
+function love.keyreleased(key)
+    print(key)
+end
+
+function love.mousepressed(x, y, button)
+    print(x, y, button)
+end
+
+function love.mousereleased(x, y, button)
+    print(x, y, button)
 end
