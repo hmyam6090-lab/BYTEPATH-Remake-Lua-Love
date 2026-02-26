@@ -1,7 +1,8 @@
 --[[
     Area.lua implements the class [Area] that handles the management of [Game Objects]
     within a [Room]
-]] Area = Object:extend()
+]] -- 
+Area = Object:extend()
 
 function Area:new(room)
     self.room = room
@@ -9,18 +10,27 @@ function Area:new(room)
 end
 
 function Area:update(dt)
+    if self.world then
+        self.world:update(dt)
+    end
+
     -- Loops from end of list to start of list to remove game objects
     -- Since in Lua if you loop forward, it will end up skipping some elements
     for i = #self.game_objects, 1, -1 do
         local game_object = self.game_objects[i]
         game_object:update(dt)
         if game_object.dead then
+            game_object:destroy()
             table.remove(self.game_objects, i)
         end
     end
 end
 
 function Area:draw()
+    if self.world then
+        self.world:draw()
+    end
+
     for _, game_object in ipairs(self.game_objects) do
         game_object:draw()
     end
@@ -44,33 +54,21 @@ function Area:getGameObjects(filter)
     return out
 end
 
-function Area:queryCircleArea(x, y, radius, object_types)
-    local out = {}
-    for _, game_object in ipairs(self.game_objects) do
-        if fn.any(object_types, game_object.class) then
-            local d = distance(x, y, game_object.x, game_object.y)
-            if d <= radius then
-                table.insert(out, game_object)
-            end
-        end
-    end
-    return out
+function Area:addPhysicsWorld()
+    self.world = Physics.newWorld(0, 0, true)
 end
 
-function Area:getClosestGameObject(x, y, radius, object_types)
-    local min_dist = radius
-    local closest = nil
-    for _, game_object in ipairs(self.game_objects) do
-        if fn.any(object_types, game_object.class) then
-            local d = distance(x, y, game_object.x, game_object.y)
-            if d <= radius then
-                if d < min_dist then
-                    min_dist = d
-                    closest = game_object
-                end
-            end
-        end
+function Area:destroy()
+    for i = #self.game_objects, 1, -1 do
+        local game_object = self.game_objects[i]
+        game_object:destroy()
+        table.remove(self.game_objects, i)
     end
-    return closest
-end
 
+    self.game_objects = {}
+
+    if self.world then
+        self.world:destroy()
+        self.world = nil
+    end
+end

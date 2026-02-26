@@ -11,14 +11,8 @@ function UUID()
 end
 
 function random(min, max)
-    if not max then -- if max is nil then it means only one value was passed in
-        return love.math.random() * min
-    else
-        if min > max then
-            min, max = max, min
-        end
-        return love.math.random() * (max - min) + min
-    end
+    local min, max = min or 0, max or 1
+    return (min > max and (love.math.random() * (min - max) + max)) or (love.math.random() * (max - min) + min)
 end
 
 function distance(x1, y1, x2, y2)

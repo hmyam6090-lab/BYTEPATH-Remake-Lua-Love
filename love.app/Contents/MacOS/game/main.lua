@@ -17,7 +17,9 @@
 Object = require 'libraries/classic/classic'
 Input = require 'libraries/Input'
 Timer = require 'libraries/hump/EnhancedTimer'
+Camera = require 'libraries/hump/camera'
 fn = require 'libraries/moses/moses'
+Physics = require 'libraries/windfield'
 
 require 'GameObject'
 require 'utils'
@@ -56,6 +58,9 @@ function requireFiles(files)
 end
 
 function gotoRoom(room_type, ...)
+    if current_room and current_room.destroy then
+        current_room:destroy()
+    end
     current_room = _G[room_type](...)
 end
 
@@ -83,7 +88,30 @@ function love.load()
     timer = Timer()
     fn = fn()
 
-    input:bind('d', 'delete')
+    resize(3)
+    love.graphics.setDefaultFilter('nearest')
+    love.graphics.setLineStyle('rough')
+
+    camera = Camera()
+
+    input:bind('1', function()
+        print("Before collection: " .. collectgarbage("count") / 1024)
+        collectgarbage()
+        print("After collection: " .. collectgarbage("count") / 1024)
+        print("Object count: ")
+        local counts = type_count()
+        for k, v in ipairs(counts) do
+            print(k, v)
+        end
+        print("-------------------------------------")
+    end)
+
+    input:bind('4', function()
+        gotoRoom('Stage')
+    end)
+
+    input:bind('a', "left")
+    input:bind('d', "right")
 
     current_room = nil
     gotoRoom('Stage')
@@ -95,14 +123,64 @@ function love.update(dt)
     if current_room then
         current_room:update(dt)
     end
+
+    camera:update(dt)
 end
 
 function love.draw()
     if current_room then
         current_room:draw()
     end
+
 end
 
 function love.keypressed(key)
 
+end
+
+--[[
+**********************************************
+BELOW IS MEMORY TRACKING/GARBAGE COLLECTION IMPLEMENTATION
+**********************************************
+]] --
+function count_all(f)
+    local seen = {}
+    local count_table
+    count_table = function(t)
+        if seen[t] then
+            return
+        end
+        f(t)
+        seen[t] = true
+        for k, v in pairs(t) do
+            if type(v) == "table" then
+                count_table(v)
+            elseif type(v) == "userdata" then
+                f(v)
+            end
+        end
+    end
+    count_table(_G)
+end
+
+function type_count()
+    local counts = {}
+    local enumerate = function(o)
+        local t = type_name(o)
+        counts[t] = (counts[t] or 0) + 1
+    end
+    count_all(enumerate)
+    return counts
+end
+
+global_type_table = nil
+function type_name(o)
+    if global_type_table == nil then
+        global_type_table = {}
+        for k, v in pairs(_G) do
+            global_type_table[v] = k
+        end
+        global_type_table[0] = "table"
+    end
+    return global_type_table[getmetatable(o) or 0] or "Unknown"
 end
