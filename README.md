@@ -11,7 +11,6 @@ Pilot your ship through endless waves of enemies, collecting upgrades to boost y
 ![Gameplay Demo](./assets/gameplay.gif)
 
 ![Menu](./assets/home.gif)
-![Playing](./assets/gameplay.gif) 
 ![Game Over](./assets/gameover.png) |
 
 ## Features
