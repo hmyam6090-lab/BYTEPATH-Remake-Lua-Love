@@ -2,7 +2,7 @@
 
 A brutal pixel-art bullet-hell roguelite demo built in LÖVE 2D.
 
-Inspired by [BYTEPATH](https://github.com/a327ex/BYTEPATH) and his great tutorials
+Inspired by [BYTEPATH](https://github.com/a327ex/BYTEPATH) and their great tutorials
 
 ## Gameplay
 
